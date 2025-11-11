@@ -9,21 +9,17 @@ specifies that any user authenticated via an API key can "create", "read",
 const schema = a.schema({
   Todo: a
     .model({
-      content: a.string(),
+      content: a.string().required(),
+      done: a.boolean().default(false),
+      priority: a.enum(['LOW', 'MEDIUM', 'HIGH']),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization([a.allow.authenticated()]), //認証済みユーザーのみアクセス可能
 });
 
 export type Schema = ClientSchema<typeof schema>;
 
 export const data = defineData({
-  schema,
-  authorizationModes: {
-    defaultAuthorizationMode: "apiKey",
-    apiKeyAuthorizationMode: {
-      expiresInDays: 30,
-    },
-  },
+  schema
 });
 
 /*== STEP 2 ===============================================================

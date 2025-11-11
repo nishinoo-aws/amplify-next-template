@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "amplify:sandbox": "npx @aws-amplify/backend-cli sandbox",
+    "amplify:deploy": "npx @aws-amplify/backend-cli deploy"
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.5.5",

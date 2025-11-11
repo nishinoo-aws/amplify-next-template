@@ -1,52 +1,47 @@
-"use client";
+// src/app/page.tsx
+import { cookiesClient } from '@/lib/amplify-server';
 
-import { useState, useEffect } from "react";
-import { generateClient } from "aws-amplify/data";
-import type { Schema } from "@/amplify/data/resource";
-import "./../app/app.css";
-import { Amplify } from "aws-amplify";
-import outputs from "@/amplify_outputs.json";
-import "@aws-amplify/ui-react/styles.css";
+export default async function HomePage() {
+  // GraphQLクエリでTodoリストを取得
+  const { data: todos, errors } = await cookiesClient.models.Todo.list();
 
-Amplify.configure(outputs);
-
-const client = generateClient<Schema>();
-
-export default function App() {
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
-
-  function listTodos() {
-    client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
-    });
-  }
-
-  useEffect(() => {
-    listTodos();
-  }, []);
-
-  function createTodo() {
-    client.models.Todo.create({
-      content: window.prompt("Todo content"),
-    });
+  // エラーハンドリング
+  if (errors) {
+    console.error('GraphQLエラー:', errors);
   }
 
   return (
-    <main>
-      <h1>My todos</h1>
-      <button onClick={createTodo}>+ new</button>
-      <ul>
-        {todos.map((todo) => (
-          <li key={todo.id}>{todo.content}</li>
-        ))}
-      </ul>
-      <div>
-        🥳 App successfully hosted. Try creating a new todo.
-        <br />
-        <a href="https://docs.amplify.aws/nextjs/start/quickstart/nextjs-app-router-client-components/">
-          Review next steps of this tutorial.
-        </a>
-      </div>
-    </main>
+    <div>
+      <h2>Todoリスト</h2>
+      
+      {/* Todoが存在しない場合 */}
+      {!todos || todos.length === 0 ? (
+        <p>Todoがありません。最初のTodoを作成してみましょう。</p>
+      ) : (
+        /* Todoリストを表示 */
+        <ul>
+          {todos.map((todo) => (
+            <li key={todo.id} style={{ marginBottom: '10px' }}>
+              <div>
+                <strong>内容:</strong> {todo.content}
+              </div>
+              <div>
+                <strong>完了:</strong> {todo.done ? '✅ 完了' : '⏳ 未完了'}
+              </div>
+              <div>
+                <strong>優先度:</strong> {todo.priority || '未設定'}
+              </div>
+              <hr />
+            </li>
+          ))}
+        </ul>
+      )}
+      
+      {/* デバッグ情報 */}
+      <details style={{ marginTop: '20px' }}>
+        <summary>デバッグ情報</summary>
+        <pre>{JSON.stringify({ todos, errors }, null, 2)}</pre>
+      </details>
+    </div>
   );
 }
